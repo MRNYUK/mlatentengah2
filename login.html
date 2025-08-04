@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Login</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;600&display=swap" rel="stylesheet">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <div class="background"></div>
+  <div class="login-container" id="loginBox">
+
+    <h2>Selamat Datang Di MLT2 😊</h2>
+    <p>Silakan login untuk melanjutkan</p>
+    <form id="loginForm">
+      <div class="input-group">
+        <i class="fas fa-user"></i>
+        <input type="text" id="username" placeholder="Username" required>
+      </div>
+      <div class="input-group">
+        <i class="fas fa-lock"></i>
+        <input type="password" id="password" placeholder="Password" required>
+      </div>
+      <button type="submit">Masuk</button>
+      <p class="register-link">Belum punya akun? <a href="register.html">Daftar di sini</a></p>
+    </form>
+  </div>
+
+  <script>
+  const form = document.getElementById("loginForm");
+  const box = document.getElementById("loginBox");
+
+  const users = [
+    { username: "admin", password: "admin123" },
+    { username: "firza", password: "firza123" },
+    { username: "guru", password: "guru123" }
+  ];
+
+  form.addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const usernameInput = document.getElementById("username").value;
+    const passwordInput = document.getElementById("password").value;
+
+    const validUser = users.find(
+      (user) => user.username === usernameInput && user.password === passwordInput
+    );
+
+    if (validUser) {
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("username", validUser.username);
+      window.location.href = "dashboard.html";
+    } else {
+      box.classList.add("shake");
+      setTimeout(() => box.classList.remove("shake"), 500);
+      alert("Username atau password salah!");
+    }
+  });
+</script>
+
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script src="app.js"></script>
+
+<div id="g_id_onload"
+     data-client_id="1068137116932-4vjamd4h054vg919fob8kr9k27ar6pvv.apps.googleusercontent.com"
+     data-callback="handleCredentialResponse">
+</div>
+
+<div class="g_id_signin"
+     data-type="standard"
+     data-size="large"
+     data-theme="outline"
+     data-text="sign_in_with"
+     data-shape="rectangular"
+     data-logo_alignment="left">
+</div>
+
+</body>
+</html>

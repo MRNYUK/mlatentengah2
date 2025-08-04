@@ -1,0 +1,123 @@
+/* Reset dasar */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+
+body, html {
+  height: 100%;
+}
+
+/* Background gradasi */
+.background {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: linear-gradient(135deg, #74ebd5, #9face6);
+  z-index: -1;
+}
+
+/* Container login */
+.login-container {
+  background: rgba(255, 255, 255, 0.9);
+  max-width: 350px;
+  margin: auto;
+  margin-top: 8%;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+  text-align: center;
+}
+
+/* Judul dan teks pembuka */
+.login-container h2 {
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.login-container p {
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 25px;
+}
+
+/* Grup input */
+.input-group {
+  position: relative;
+  margin-bottom: 20px;
+}
+
+.input-group i {
+  position: absolute;
+  top: 50%;
+  left: 12px;
+  transform: translateY(-50%);
+  color: #888;
+}
+
+.input-group input {
+  width: 100%;
+  padding: 12px 12px 12px 40px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  outline: none;
+  transition: 0.3s;
+}
+
+.input-group input:focus {
+  border-color: #6a5acd;
+  box-shadow: 0 0 8px rgba(106, 90, 205, 0.3);
+}
+
+/* Tombol */
+button {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  background-color: #6a5acd;
+  color: white;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+button:hover {
+  background-color: #5a4dcf;
+  transform: scale(1.02);
+}
+
+/* Link daftar */
+.register-link {
+  margin-top: 15px;
+  font-size: 13px;
+  color: #555;
+}
+
+.register-link a {
+  color: #6a5acd;
+  text-decoration: none;
+}
+
+.register-link a:hover {
+  text-decoration: underline;
+}
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
+}
+
+.shake {
+  animation: shake 0.3s ease;
+}
+
+.g_id_signin {
+    margin-top: 20px;
+}
+
