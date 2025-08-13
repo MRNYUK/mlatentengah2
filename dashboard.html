@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Admin</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        /* Definisikan variabel untuk mode gelap (default) */
+        :root {
+            --bg-color: #121212;
+            --sidebar-bg: #1f1f1f;
+            --topbar-bg: #1f1f1f;
+            --text-color: #eee;
+            --link-color: #ccc;
+            --link-hover-bg: #333;
+            --link-hover-color: #e74c3c;
+            --card-bg: #1f1f1f;
+            --input-bg: #2a2a2a;
+            --input-border: #333;
+            --shadow-color: rgba(0,0,0,0.3);
+            --chat-bg: #1f1f1f;
+            --chat-input-bg: #2a2a2a;
+            --chat-input-border: #333;
+            --chat-message-bg-sent: #e74c3c;
+            --chat-message-bg-received: #333;
+        }
+
+        /* Ganti variabel untuk mode terang saat class 'light-mode' aktif */
+        .light-mode {
+            --bg-color: #f0f2f5;
+            --sidebar-bg: #ffffff;
+            --topbar-bg: #ffffff;
+            --text-color: #333;
+            --link-color: #555;
+            --link-hover-bg: #f0f0f0;
+            --link-hover-color: #e74c3c;
+            --card-bg: #ffffff;
+            --input-bg: #e9ecef;
+            --input-border: #ccc;
+            --shadow-color: rgba(0,0,0,0.1);
+            --chat-bg: #ffffff;
+            --chat-input-bg: #f8f9fa;
+            --chat-input-border: #ccc;
+            --chat-message-bg-sent: #e74c3c;
+            --chat-message-bg-received: #f1f1f1;
+        }
+
+        /* Terapkan variabel ke elemen-elemen HTML */
+        body { margin: 0; font-family: Poppins, sans-serif; color: var(--text-color); background: var(--bg-color); transition: background-color 0.3s, color 0.3s; }
+        .sidebar { background: var(--sidebar-bg); }
+        .sidebar a { color: var(--link-color); }
+        .sidebar a.active, .sidebar a:hover { background: var(--link-hover-bg); color: var(--link-hover-color); }
+        .topbar { background: var(--topbar-bg); border-bottom: 1px solid var(--input-border); }
+        .editable { background: var(--input-bg); border: 1px dashed transparent; }
+        .editable:focus { border-color: var(--link-hover-color); }
+        .profile-card { background: var(--card-bg); color: var(--text-color); box-shadow: 0 5px 15px var(--shadow-color); }
+        .modal-content { background: var(--card-bg); color: var(--text-color); }
+        .modal-content input { background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-color); }
+        .notif-dropdown { background: var(--card-bg); border: 1px solid var(--input-border); box-shadow: 0 5px 10px var(--shadow-color); }
+        .notif-dropdown h4 { border-bottom: 1px solid var(--input-border); color: var(--text-color); }
+        .notif-dropdown ul li { border-bottom: 1px solid var(--input-border); color: var(--link-color); }
+        .notif-dropdown ul li.unread { background: var(--input-bg); }
+        .chat-box { background-color: var(--input-bg); border: 1px solid var(--input-border); box-shadow: 0 4px 15px var(--shadow-color); }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px; display: none; }
+        .chat-messages .message-user { text-align: right; }
+        .chat-messages .message-admin { text-align: left; }
+        .chat-messages .message-bubble { display: inline-block; padding: 8px 12px; border-radius: 15px; max-width: 80%; margin-bottom: 5px; position: relative; }
+        .chat-messages .message-user .message-bubble { background-color: var(--chat-message-bg-sent); color: white; }
+        .chat-messages .message-admin .message-bubble { background-color: var(--chat-message-bg-received); color: var(--text-color); }
+        .chat-input { display: none; padding: 10px; }
+        .chat-input input { width: calc(100% - 50px); border: 1px solid var(--chat-input-border); padding: 8px; border-radius: 20px; margin-right: 5px; }
+        .chat-input button { width: 40px; height: 40px; border-radius: 50%; border: none; background-color: #e74c3c; color: white; }
+        .search-box #searchInput { background: var(--link-hover-bg); border: 1px solid var(--input-border); color: var(--text-color); }
+        .profile-section { background: var(--card-bg); }
+        .profile-section h4 { color: var(--text-color); }
+        .profile-details p { color: var(--link-color); }
+        .profile-details .name { color: var(--text-color); }
+        .profile-info input { background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-color); }
+        .chat-page { background: var(--bg-color); color: var(--text-color); }
+        .chat-contacts { background: var(--sidebar-bg); border-right: 1px solid var(--input-border); }
+        .chat-contacts h5 { padding-bottom: 10px; margin-bottom: 10px; }
+        .chat-contacts ul li { border-bottom: 1px solid var(--input-border); }
+        .chat-contacts ul li:hover, .chat-contacts ul li.active { background-color: var(--link-hover-bg); }
+        #chat-message-list { background: var(--input-bg); }
+        .chat-message-bubble.sent { align-self: flex-end; background: var(--chat-message-bg-sent); }
+        .chat-message-bubble.received { align-self: flex-start; background: var(--chat-message-bg-received); }
+        .chat-input-area { background: var(--sidebar-bg); border-top: 1px solid var(--input-border); }
+        #chat-message-input { background: var(--input-bg); border: 1px solid var(--input-border); color: var(--text-color); }
+        #send-message-btn { background: #e74c3c; border: none; }
+        .notif-dropdown { display: none; position: absolute; right: 0; top: 30px; background: var(--card-bg); border: 1px solid var(--input-border); border-radius: 8px; width: 250px; box-shadow: 0 5px 10px var(--shadow-color); z-index: 100; }
+        .notif-dropdown button { background: var(--chat-message-bg-sent); }
+
+        .container-fluid { display: flex; min-height: 100vh; }
+        .sidebar { width: 250px; flex-shrink: 0; padding: 20px; box-sizing: border-box; transition: transform 0.3s ease-in-out, width 0.3s ease-in-out; }
+        .sidebar-header { margin-bottom: 30px; }
+        .sidebar-header img { width: 40px; height: 40px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; }
+        .sidebar-menu a { display: flex; align-items: center; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-bottom: 5px; transition: all 0.2s ease-in-out; }
+        .sidebar-menu a i { margin-right: 15px; }
+        .content { flex-grow: 1; display: flex; flex-direction: column; transition: margin-left 0.3s ease-in-out; }
+        .topbar { padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .search-box { position: relative; }
+        .search-box input { border: none; border-radius: 20px; padding: 8px 15px 8px 40px; width: 300px; transition: all 0.3s; }
+        .search-box i { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); }
+        .user-info { display: flex; align-items: center; cursor: pointer; }
+        .user-info img { width: 40px; height: 40px; border-radius: 50%; margin-left: 15px; object-fit: cover; }
+        .main-content { padding: 30px; flex-grow: 1; }
+        .d-flex { display: flex; }
+        .align-items-center { align-items: center; }
+        .justify-content-between { justify-content: space-between; }
+        .text-light { color: var(--text-color); }
+        .text-light-50 { color: rgba(255, 255, 255, 0.5); }
+        .text-center { text-align: center; }
+        .text-secondary { color: var(--link-color); }
+        .gap-3 { gap: 1rem; }
+        .mb-3 { margin-bottom: 1rem; }
+        .mb-4 { margin-bottom: 1.5rem; }
+        .mt-3 { margin-top: 1rem; }
+        .w-100 { width: 100%; }
+        .form-control, .form-select { display: block; width: 100%; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; color: var(--text-color); background-color: var(--input-bg); border: 1px solid var(--input-border); border-radius: .25rem; }
+        .btn { display: inline-block; font-weight: 400; text-align: center; white-space: nowrap; vertical-align: middle; user-select: none; border: 1px solid transparent; padding: .375rem .75rem; font-size: 1rem; line-height: 1.5; border-radius: .25rem; transition: color .15s ease-in-out, background-color .15s ease-in-out, border-color .15s ease-in-out, box-shadow .15s ease-in-out; }
+        .btn-outline-light { color: var(--text-color); background-color: transparent; border-color: var(--text-color); }
+        .btn-outline-light:hover { color: var(--bg-color); background-color: var(--text-color); border-color: var(--text-color); }
+        .btn-danger { color: #fff; background-color: #dc3545; border-color: #dc3545; }
+        .btn-danger:hover { color: #fff; background-color: #c82333; border-color: #bd2130; }
+        .btn-sm { padding: .25rem .5rem; font-size: .875rem; line-height: 1.5; border-radius: .2rem; }
+        .badge { display: inline-block; padding: .25em .4em; font-size: 75%; font-weight: 700; line-height: 1; text-align: center; white-space: nowrap; vertical-align: baseline; border-radius: .25rem; }
+        .badge-danger { color: #fff; background-color: #dc3545; }
+        .modal-body .input-group { margin-bottom: 15px; }
+        .modal-body .input-group label { display: block; margin-bottom: 5px; }
+        .modal-body .input-group input { width: 100%; }
+        .modal-body .btn { width: 100%; }
+        .editable { min-height: 200px; padding: 15px; border-radius: 8px; border: 1px dashed var(--input-border); outline: none; transition: border-color 0.3s; }
+        .highlight { background-color: yellow; color: black; padding: 2px; border-radius: 3px; }
+        .chat-box { position: fixed; bottom: 20px; right: 20px; width: 300px; height: 50px; transition: height 0.3s; border-radius: 8px; z-index: 1000; overflow: hidden; display: flex; flex-direction: column; }
+        .chat-header { padding: 10px; cursor: pointer; background-color: var(--chat-input-bg); border-bottom: 1px solid var(--chat-input-border); color: var(--text-color); display: flex; justify-content: space-between; align-items: center; }
+        .chat-messages { flex-grow: 1; overflow-y: auto; padding: 10px; display: none; }
+        .chat-messages .message-user { text-align: right; }
+        .chat-messages .message-admin { text-align: left; }
+        .chat-messages .message-bubble { display: inline-block; padding: 8px 12px; border-radius: 15px; max-width: 80%; margin-bottom: 5px; position: relative; }
+        .chat-messages .message-user .message-bubble { background-color: var(--chat-message-bg-sent); color: white; }
+        .chat-messages .message-admin .message-bubble { background-color: var(--chat-message-bg-received); color: var(--text-color); }
+        .chat-input { display: none; padding: 10px; }
+        .chat-input input { width: calc(100% - 50px); border: 1px solid var(--chat-input-border); padding: 8px; border-radius: 20px; margin-right: 5px; }
+        .chat-input button { width: 40px; height: 40px; border-radius: 50%; border: none; background-color: #e74c3c; color: white; }
+        .delete-msg-btn { position: absolute; right: 5px; top: -5px; background: none; border: none; color: #fff; font-size: 10px; cursor: pointer; display: none; }
+        .message-bubble:hover .delete-msg-btn { display: block; }
+        .image-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
+        .gallery-item { position: relative; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px var(--shadow-color); }
+        .gallery-item img { width: 100%; height: 200px; object-fit: cover; display: block; }
+        .gallery-item .delete-btn { position: absolute; top: 5px; right: 5px; background: rgba(0, 0, 0, 0.5); color: white; border: none; border-radius: 50%; width: 25px; height: 25px; font-size: 12px; cursor: pointer; }
+        .profile-section { display: flex; flex-direction: column; align-items: center; padding: 20px; border-radius: 8px; max-width: 500px; margin: auto; }
+        .profile-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .profile-img-container { position: relative; width: 100px; height: 100px; border-radius: 50%; overflow: hidden; margin-right: 20px; cursor: pointer; border: 3px solid var(--link-hover-color); }
+        .profile-img-container img { width: 100%; height: 100%; object-fit: cover; }
+        .profile-img-container input { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .profile-details p { margin: 0; }
+        .profile-details .name { font-weight: 600; font-size: 1.2rem; }
+        .profile-info { width: 100%; }
+        .profile-info .input-group { margin-bottom: 15px; }
+        .profile-info label { display: block; margin-bottom: 5px; font-size: 0.9rem; }
+        .profile-info input { width: 100%; padding: 8px; border-radius: 4px; border: 1px solid var(--input-border); }
+        .chat-page { display: none; height: 100vh; }
+        .chat-contacts { width: 300px; padding: 20px; overflow-y: auto; }
+        .chat-contacts h5 { padding-bottom: 10px; margin-bottom: 10px; }
+        .chat-contacts ul { list-style: none; padding: 0; }
+        .chat-contacts ul li { padding: 10px; cursor: pointer; transition: background-color 0.2s; }
+        .chat-main { flex: 1; display: flex; flex-direction: column; }
+        .chat-header-main { padding: 15px; border-bottom: 1px solid var(--input-border); }
+        #chat-message-list { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+        .chat-message-bubble { padding: 10px 15px; border-radius: 15px; max-width: 70%; }
+        .chat-message-bubble.sent { align-self: flex-end; background: var(--chat-message-bg-sent); color: white; }
+        .chat-message-bubble.received { align-self: flex-start; background: var(--chat-message-bg-received); }
+        .chat-input-area { padding: 15px; display: flex; }
+        #chat-message-input { flex: 1; padding: 10px; border-radius: 20px; }
+        #send-message-btn { margin-left: 10px; width: 40px; height: 40px; border-radius: 50%; background: #e74c3c; border: none; }
+
+        /* CSS untuk tampilan desktop saat sidebar dikecilkan */
+        .container-fluid.sidebar-minimized .sidebar {
+            width: 80px;
+        }
+        .container-fluid.sidebar-minimized .sidebar .sidebar-header h5,
+        .container-fluid.sidebar-minimized .sidebar .sidebar-menu a span {
+            display: none;
+        }
+        .container-fluid.sidebar-minimized .sidebar .sidebar-menu a i {
+            margin-right: 0;
+            margin: auto;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-250px); position: fixed; height: 100%; z-index: 1001; }
+            .sidebar.show { transform: translateX(0); }
+            .content { margin-left: 0; }
+            .topbar .d-flex { display: none !important; }
+            .topbar .search-box { display: none; }
+            .topbar .user-info { margin-left: auto; }
+            .main-content { padding: 15px; }
+            .chat-box { display: none; }
+            .chat-contacts { width: 100%; position: absolute; height: 100%; z-index: 10; }
+            .chat-main { display: none; }
+            .page-container { margin-left: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid" id="page-wrapper">
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-header d-flex align-items-center">
+            <h5 class="ms-3 text-light">Dashboard Admin</h5>
+        </div>
+        <ul class="sidebar-menu">
+            <li><a href="#" class="d-flex align-items-center" onclick="loadPage('dashboard', this)"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></a></li>
+            <li><a href="#" class="d-flex align-items-center" onclick="loadPage('charts', this)"><i class="bi bi-graph-up-arrow"></i><span>Grafik</span></a></li>
+            <li><a href="#" class="d-flex align-items-center" onclick="loadPage('widgets', this)"><i class="bi bi-collection-fill"></i><span>Widgets</span></a></li>
+            <li><a href="#" class="d-flex align-items-center" onclick="loadPage('chat', this)"><i class="bi bi-chat-dots-fill"></i><span>Chat</span></a></li>
+            <li><a href="#" class="d-flex align-items-center" onclick="loadPage('users', this)"><i class="bi bi-people-fill"></i><span>Manajemen Pengguna</span></a></li>
+            <li><a href="#" class="d-flex align-items-center" onclick="loadPage('profile', this)"><i class="bi bi-person-circle"></i><span>Profil</span></a></li>
+            <li><a href="#" class="d-flex align-items-center" onclick="logout()"><i class="bi bi-box-arrow-left"></i><span>Logout</span></a></li>
+        </ul>
+    </div>
+
+    <div class="content">
+        <div id="topbar" class="topbar">
+            <div id="sidebarToggle" class="me-3" style="cursor:pointer; font-size: 1.5rem; color: var(--text-color);"><i class="bi bi-list"></i></div>
+            <div class="search-box position-relative d-none d-md-block">
+                <i class="bi bi-search" style="color: var(--link-color);"></i>
+                <input type="text" id="searchInput" placeholder="Cari..." oninput="searchContent()">
+            </div>
+            <div class="d-flex align-items-center gap-3">
+                <button id="theme-toggle" class="btn btn-outline-light"><i class="bi bi-moon"></i></button>
+                <div class="position-relative">
+                    <i id="notifIcon" class="bi bi-bell-fill fs-5" style="color: var(--text-color); cursor: pointer;"></i>
+                    <span id="notif-badge" class="badge badge-danger position-absolute top-0 start-100 translate-middle rounded-pill">3</span>
+                    <div id="notif-dropdown" class="notif-dropdown">
+                        <h4 class="px-3 py-2 m-0">Notifikasi</h4>
+                        <ul class="list-unstyled m-0">
+                            <li class="px-3 py-2 unread">Pesan baru dari Admin</li>
+                            <li class="px-3 py-2">Pengguna baru terdaftar</li>
+                            <li class="px-3 py-2 unread">Grafik diperbarui</li>
+                            <li class="px-3 py-2">Laporan bulanan siap</li>
+                        </ul>
+                        <div class="p-2 text-end">
+                            <button class="btn btn-sm text-light">Lihat Semua</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="user-info d-flex align-items-center">
+                    <span id="usernameDisplay">Admin</span>
+                    <img id="topbarProfile" src="https://via.placeholder.com/40" alt="Profil">
+                </div>
+            </div>
+        </div>
+
+        <div id="mainContent" class="main-content">
+            <div class="page-container">
+                <div id="dashboard-page" class="page" style="display: none;">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="profile-card p-4">
+                                <h3>Selamat datang, <span id="dashboardUsername"></span>!</h3>
+                                <p>Ini adalah dashboard admin. Anda dapat mengelola pengguna, melihat grafik, dan lainnya.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="charts-page" class="page" style="display: none;"></div>
+                <div id="widgets-page" class="page" style="display: none;"></div>
+                <div id="users-page" class="page" style="display: none;"></div>
+                <div id="profile-page" class="page" style="display: none;"></div>
+            </div>
+
+            <div id="chat-page" class="chat-page">
+                <div class="chat-contacts">
+                    <h5 class="text-light">Kontak</h5>
+                    <ul id="contact-list" class="list-unstyled"></ul>
+                </div>
+                <div class="chat-main" id="chat-main-container">
+                    <div class="chat-header-main text-center">
+                        <h5 class="m-0 text-light">Pilih kontak untuk mulai chat</h5>
+                    </div>
+                    <div id="chat-message-list"></div>
+                    <div class="chat-input-area">
+                        <input type="text" id="chat-message-input" placeholder="Ketik pesan..." disabled>
+                        <button id="send-message-btn" class="btn"><i class="bi bi-send-fill"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="chatBox" class="chat-box">
+    <div id="chatHeader" class="chat-header">
+        <span>Chat Admin</span>
+        <span><i class="bi bi-chat-dots-fill"></i></span>
+    </div>
+    <div id="chatMessages" class="chat-messages"></div>
+    <div class="chat-input d-flex">
+        <input type="text" id="chatInput" placeholder="Ketik pesan...">
+        <button id="chatSendBtn" class="btn btn-danger"><i class="bi bi-send-fill"></i></button>
+    </div>
+</div>
+
+<script>
+    // Inisialisasi
+    if (!localStorage.getItem('isLoggedIn')) {
+        window.location.href = 'index.html';
+    }
+
+    let defaultUsers = [
+        { fullname: 'Andi Nugroho', username: 'andi.n', email: 'andi@gmail.com', phone: '08123456789' },
+        { fullname: 'Budi Santoso', username: 'budi.s', email: 'budi@gmail.com', phone: '08198765432' }
+    ];
+
+    // Tambahkan pengguna admin default jika belum ada
+    if (!defaultUsers.some(user => user.username === 'admin')) {
+        defaultUsers.unshift({ fullname: 'Admin', username: 'admin', email: 'admin@gmail.com', phone: '0811111111' });
+    }
+
+    if (!localStorage.getItem('users')) {
+        localStorage.setItem('users', JSON.stringify(defaultUsers));
+    }
+
+    let myChart = null;
+    const yearlyData = {
+        '2023': [12, 19, 3, 5, 2, 3, 15, 8, 10, 11, 6, 9],
+        '2024': [15, 10, 8, 14, 20, 12, 18, 5, 7, 13, 11, 9],
+        '2025': [8, 12, 16, 11, 9, 14, 10, 13, 17, 6, 15, 20]
+    };
+    const defaultYear = '2024';
+    const loggedInUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+    let messages = JSON.parse(localStorage.getItem('messages')) || [];
+    let currentChatUser = null;
+
+    // Tambahkan pesan default jika local storage kosong
+    if (messages.length === 0) {
+        messages = [
+            { sender: 'admin', receiver: loggedInUser.username, text: 'Halo, ada yang bisa saya bantu?' },
+            { sender: loggedInUser.username, receiver: 'admin', text: 'Selamat pagi, saya ingin bertanya tentang fitur baru.' }
+        ];
+        localStorage.setItem('messages', JSON.stringify(messages));
+    }
+
+    function loadPage(page, el) {
+        document.querySelectorAll(".sidebar a").forEach(a => a.classList.remove("active"));
+        if (el) el.classList.add("active");
+        localStorage.setItem("lastPage", page);
+        clearHighlights();
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = '';
+
+        const allPages = document.querySelectorAll('.page');
+        allPages.forEach(p => p.style.display = 'none');
+
+        const pageContainer = document.querySelector('.page-container');
+        if (pageContainer) pageContainer.style.display = 'block';
+
+        const chatPage = document.getElementById('chat-page');
+        if (chatPage) {
+            chatPage.style.display = 'none';
+        }
+
+        const chatBox = document.getElementById('chatBox');
+        if (chatBox) {
+            chatBox.style.display = page === 'dashboard' ? 'flex' : 'none';
+        }
+
+        if (myChart) {
+            myChart.destroy();
+            myChart = null;
+        }
+
+        const pageElement = document.getElementById(`${page}-page`);
+        if (pageElement) {
+            pageElement.style.display = 'block';
+        }
+
+        if (page === 'dashboard') {
+            const dashboardUsername = document.getElementById('dashboardUsername');
+            if(dashboardUsername) dashboardUsername.textContent = loggedInUser.fullname || loggedInUser.username || 'Pengguna';
+        } else if (page === 'charts') {
+            const savedChartType = localStorage.getItem('chartType') || 'bar';
+            const savedYear = localStorage.getItem('chartYear') || defaultYear;
+            const savedData = localStorage.getItem(`chartData_${savedYear}`);
+            const initialData = savedData ? JSON.parse(savedData) : yearlyData[savedYear];
+            const initialDataString = initialData.join(',');
+            pageElement.innerHTML = `
+                <div style="background: var(--card-bg); padding: 20px; border-radius: 8px;">
+                    <h4 class="mb-4">Grafik Data Bulanan</h4>
+                    <div class="mb-3 d-flex align-items-center gap-3">
+                        <div>
+                            <label for="chartType" class="me-2 text-light">Jenis Grafik:</label>
+                            <select id="chartType" class="form-select" onchange="updateChart()">
+                                <option value="bar" ${savedChartType === 'bar' ? 'selected' : ''}>Batang</option>
+                                <option value="line" ${savedChartType === 'line' ? 'selected' : ''}>Garis</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="chartYear" class="me-2 text-light">Pilih Tahun:</label>
+                            <select id="chartYear" class="form-select" onchange="updateChart()">
+                                <option value="2023" ${savedYear === '2023' ? 'selected' : ''}>2023</option>
+                                <option value="2024" ${savedYear === '2024' ? 'selected' : ''}>2024</option>
+                                <option value="2025" ${savedYear === '2025' ? 'selected' : ''}>2025</option>
+                            </select>
+                        </div>
+                        <div class="ms-auto">
+                            <label for="dataInput" class="me-2 text-light">Data:</label>
+                            <input type="text" id="dataInput" class="form-control" value="${initialDataString}" placeholder="Contoh: 12,19,3,5..." oninput="updateChart()">
+                        </div>
+                    </div>
+                    <canvas id="myChart"></canvas>
+                </div>
+            `;
+            const ctx = document.getElementById('myChart').getContext('2d');
+            myChart = new Chart(ctx, {
+                type: savedChartType,
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                    datasets: [{
+                        label: `Data Bulanan ${savedYear}`,
+                        data: initialData,
+                        backgroundColor: savedChartType === 'bar' ? 'rgba(231, 76, 60, 0.5)' : 'rgba(231, 76, 60, 0.2)',
+                        borderColor: 'rgba(231, 76, 60, 1)',
+                        borderWidth: savedChartType === 'line' ? 2 : 1,
+                        tension: savedChartType === 'line' ? 0.4 : 0,
+                        fill: savedChartType === 'line'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: { beginAtZero: true, ticks: { color: 'var(--text-color)' }, grid: { color: 'rgba(255,255,255,0.1)' } },
+                        x: { ticks: { color: 'var(--text-color)' }, grid: { color: 'rgba(255,255,255,0.1)' } }
+                    },
+                    plugins: { legend: { labels: { color: 'var(--text-color)' } } }
+                }
+            });
+        } else if (page === 'widgets') {
+            pageElement.innerHTML = `
+                <h4 class="mb-4">Manajemen Konten</h4>
+                <div class="d-flex justify-content-between mb-3">
+                    <h5 class="text-light">Daftar Gambar</h5>
+                    <button class="btn btn-sm btn-outline-light" onclick="addImage()"><i class="bi bi-plus-lg"></i> Tambah Gambar</button>
+                </div>
+                <div id="imageGallery" class="image-gallery"></div>
+            `;
+            renderImageGallery();
+        } else if (page === 'users') {
+            renderUsersPage();
+        } else if (page === 'profile') {
+            renderProfilePage();
+        } else if (page === 'chat') {
+            const chatMainContainer = document.getElementById('chat-main-container');
+            const chatContacts = document.querySelector('.chat-contacts');
+            if (chatMainContainer && chatContacts) {
+                if (window.innerWidth <= 768) {
+                    chatMainContainer.style.display = 'none';
+                    chatContacts.style.display = 'block';
+                } else {
+                    chatMainContainer.style.display = 'flex';
+                    chatContacts.style.display = 'block';
+                }
+            }
+            chatPage.style.display = 'flex';
+            renderContacts();
+        }
+    }
+
+    function updateChart() {
+        if (!myChart) return;
+        const chartType = document.getElementById('chartType').value;
+        const chartYear = document.getElementById('chartYear').value;
+        const dataInput = document.getElementById('dataInput').value;
+        const data = dataInput.split(',').map(Number);
+        const savedData = localStorage.getItem(`chartData_${chartYear}`);
+        const currentData = savedData ? JSON.parse(savedData) : yearlyData[chartYear];
+
+        myChart.data.labels = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+        myChart.data.datasets[0].label = `Data Bulanan ${chartYear}`;
+        myChart.data.datasets[0].data = data.length === 12 && data.every(d => !isNaN(d)) ? data : currentData;
+        myChart.config.type = chartType;
+        myChart.data.datasets[0].backgroundColor = chartType === 'bar' ? 'rgba(231, 76, 60, 0.5)' : 'rgba(231, 76, 60, 0.2)';
+        myChart.data.datasets[0].borderWidth = chartType === 'line' ? 2 : 1;
+        myChart.data.datasets[0].tension = chartType === 'line' ? 0.4 : 0;
+        myChart.data.datasets[0].fill = chartType === 'line';
+
+        localStorage.setItem('chartType', chartType);
+        localStorage.setItem('chartYear', chartYear);
+        localStorage.setItem(`chartData_${chartYear}`, JSON.stringify(myChart.data.datasets[0].data));
+
+        myChart.update();
+    }
+
+    let currentSortOrder = 'asc';
+    function renderUsersPage() {
+        const usersPage = document.getElementById('users-page');
+        usersPage.style.display = 'block';
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        users.sort((a, b) => {
+            const nameA = a.fullname.toUpperCase();
+            const nameB = b.fullname.toUpperCase();
+            if (currentSortOrder === 'asc') {
+                return (nameA < nameB) ? -1 : (nameA > nameB) ? 1 : 0;
+            } else {
+                return (nameA > nameB) ? -1 : (nameA < nameB) ? 1 : 0;
+            }
+        });
+        let userListHtml = `<h4 class="mb-4">Daftar Pengguna</h4>
+                            <div class="mb-3 d-flex justify-content-between align-items-center">
+                                <div>
+                                    <button class="btn btn-sm btn-outline-light" onclick="sortUsers()">Urutkan Nama <i class="bi bi-sort-alpha-${currentSortOrder === 'asc' ? 'down' : 'up'}"></i></button>
+                                </div>
+                                <div>
+                                    <button class="btn btn-sm btn-danger" onclick="deleteSelectedUsers()"><i class="bi bi-trash-fill"></i> Hapus yang Dipilih</button>
+                                </div>
+                            </div>
+                            <table class="table text-light table-hover">
+                                <thead>
+                                    <tr>
+                                        <th scope="col"><input type="checkbox" id="selectAllUsers"></th>
+                                        <th scope="col">Nama Lengkap</th>
+                                        <th scope="col">Username</th>
+                                        <th scope="col">Email</th>
+                                        <th scope="col">Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="user-table-body">`;
+        users.forEach((user, index) => {
+            if (user.username !== loggedInUser.username) {
+                userListHtml += `
+                    <tr>
+                        <td><input type="checkbox" class="user-checkbox" value="${user.username}"></td>
+                        <td>${user.fullname}</td>
+                        <td>${user.username}</td>
+                        <td>${user.email}</td>
+                        <td><button class="btn btn-sm btn-danger" onclick="deleteUser('${user.username}')"><i class="bi bi-trash-fill"></i> Hapus</button></td>
+                    </tr>
+                `;
+            }
+        });
+        userListHtml += `</tbody></table>`;
+        usersPage.innerHTML = userListHtml;
+
+        document.getElementById('selectAllUsers').addEventListener('change', (e) => {
+            document.querySelectorAll('.user-checkbox').forEach(checkbox => {
+                checkbox.checked = e.target.checked;
+            });
+        });
+    }
+
+    function sortUsers() {
+        currentSortOrder = currentSortOrder === 'asc' ? 'desc' : 'asc';
+        renderUsersPage();
+    }
+
+    function deleteUser(username) {
+        if (confirm(`Apakah Anda yakin ingin menghapus pengguna ${username}?`)) {
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            users = users.filter(user => user.username !== username);
+            localStorage.setItem('users', JSON.stringify(users));
+            renderUsersPage();
+            alert(`Pengguna ${username} berhasil dihapus.`);
+        }
+    }
+
+    function deleteSelectedUsers() {
+        const selectedUsers = Array.from(document.querySelectorAll('.user-checkbox:checked')).map(checkbox => checkbox.value);
+        if (selectedUsers.length === 0) {
+            alert('Pilih setidaknya satu pengguna untuk dihapus.');
+            return;
+        }
+        if (confirm(`Apakah Anda yakin ingin menghapus ${selectedUsers.length} pengguna yang dipilih?`)) {
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            users = users.filter(user => !selectedUsers.includes(user.username));
+            localStorage.setItem('users', JSON.stringify(users));
+            renderUsersPage();
+            alert(`${selectedUsers.length} pengguna berhasil dihapus.`);
+        }
+    }
+
+    function addImage() {
+        const url = prompt("Masukkan URL gambar:");
+        if (url) {
+            let images = JSON.parse(localStorage.getItem('images')) || [];
+            images.push({ id: Date.now(), url: url });
+            localStorage.setItem('images', JSON.stringify(images));
+            renderImageGallery();
+        }
+    }
+
+    function deleteImage(id) {
+        if (confirm("Apakah Anda yakin ingin menghapus gambar ini?")) {
+            let images = JSON.parse(localStorage.getItem('images')) || [];
+            images = images.filter(img => img.id !== id);
+            localStorage.setItem('images', JSON.stringify(images));
+            renderImageGallery();
+        }
+    }
+
+    function renderImageGallery() {
+        const gallery = document.getElementById('imageGallery');
+        const images = JSON.parse(localStorage.getItem('images')) || [];
+        if (gallery) {
+            gallery.innerHTML = images.map(img => `
+                <div class="gallery-item">
+                    <img src="${img.url}" alt="Gallery Image">
+                    <button class="delete-btn" onclick="deleteImage(${img.id})"><i class="bi bi-x-lg"></i></button>
+                </div>
+            `).join('');
+        }
+    }
+
+    function renderProfilePage() {
+        const profilePage = document.getElementById('profile-page');
+        const currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        profilePage.innerHTML = `
+            <h4 class="mb-4">Profil Pengguna</h4>
+            <div class="profile-section">
+                <div class="profile-header">
+                    <div class="profile-img-container">
+                        <img id="profile-img" src="https://via.placeholder.com/100" alt="Profil">
+                        <input type="file" id="profile-img-upload" accept="image/*" onchange="previewImage(event)">
+                    </div>
+                    <div class="profile-details">
+                        <p class="name" id="profile-name-display">${currentUser.fullname || currentUser.username || 'Pengguna'}</p>
+                        <p class="text-secondary">${currentUser.email || 'Belum ada email'}</p>
+                    </div>
+                </div>
+                <div class="profile-info">
+                    <div class="input-group">
+                        <label for="profile-name">Nama Lengkap</label>
+                        <input type="text" id="profile-name" value="${currentUser.fullname || ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="profile-email">Email</label>
+                        <input type="email" id="profile-email" value="${currentUser.email || ''}">
+                    </div>
+                    <div class="input-group">
+                        <label for="profile-phone">Nomor Telepon</label>
+                        <input type="tel" id="profile-phone" value="${currentUser.phone || ''}">
+                    </div>
+                    <button class="btn btn-danger w-100 mt-3" onclick="saveProfile()">Simpan Perubahan</button>
+                </div>
+            </div>
+        `;
+    }
+
+    function saveProfile() {
+        const name = document.getElementById('profile-name').value;
+        const email = document.getElementById('profile-email').value;
+        const phone = document.getElementById('profile-phone').value;
+        let currentUser = JSON.parse(localStorage.getItem('currentUser')) || {};
+        currentUser.fullname = name;
+        currentUser.email = email;
+        currentUser.phone = phone;
+        localStorage.setItem('currentUser', JSON.stringify(currentUser));
+        alert('Profil berhasil diperbarui!');
+        loadPage('profile', document.querySelector('[onclick="loadPage(\'profile\', this)"]'));
+        updateTopbarUsername();
+    }
+
+    function previewImage(event) {
+        const reader = new FileReader();
+        reader.onload = function(){
+            const output = document.getElementById('profile-img');
+            output.src = reader.result;
+        };
+        reader.readAsDataURL(event.target.files[0]);
+    }
+
+    function renderContacts() {
+        const contactList = document.getElementById('contact-list');
+        const users = JSON.parse(localStorage.getItem('users')) || [];
+        const loggedInUsername = loggedInUser.username;
+        contactList.innerHTML = '';
+        users.forEach(user => {
+            if (user.username !== loggedInUsername) {
+                const li = document.createElement('li');
+                li.textContent = user.fullname;
+                li.setAttribute('data-username', user.username);
+                li.onclick = () => openChat(user.username);
+                contactList.appendChild(li);
+            }
+        });
+
+        // Auto open the first chat on page load
+        if (users.length > 1 && !currentChatUser) {
+            const firstUser = users.find(user => user.username !== loggedInUsername);
+            if (firstUser) {
+                openChat(firstUser.username);
+            }
+        }
+    }
+
+    function openChat(username) {
+        currentChatUser = username;
+        const chatHeader = document.querySelector('.chat-header-main h5');
+        const user = JSON.parse(localStorage.getItem('users')).find(u => u.username === username);
+        chatHeader.textContent = user ? user.fullname : 'Pilih kontak untuk mulai chat';
+
+        const messageInput = document.getElementById('chat-message-input');
+        messageInput.disabled = !username;
+
+        const contactItems = document.querySelectorAll('#contact-list li');
+        contactItems.forEach(item => {
+            item.classList.remove('active');
+            if (item.getAttribute('data-username') === username) {
+                item.classList.add('active');
+            }
+        });
+
+        renderMessages();
+
+        const chatMainContainer = document.getElementById('chat-main-container');
+        const chatContacts = document.querySelector('.chat-contacts');
+        if (window.innerWidth <= 768) {
+            chatMainContainer.style.display = 'flex';
+            chatContacts.style.display = 'none';
+        }
+    }
+
+    function renderMessages() {
+        const messageList = document.getElementById('chat-message-list');
+        messageList.innerHTML = '';
+        messages.filter(msg => 
+            (msg.sender === loggedInUser.username && msg.receiver === currentChatUser) ||
+            (msg.sender === currentChatUser && msg.receiver === loggedInUser.username)
+        ).forEach(msg => {
+            const bubble = document.createElement('div');
+            bubble.classList.add('chat-message-bubble');
+            bubble.textContent = msg.text;
+            if (msg.sender === loggedInUser.username) {
+                bubble.classList.add('sent');
+            } else {
+                bubble.classList.add('received');
+            }
+            messageList.appendChild(bubble);
+        });
+        messageList.scrollTop = messageList.scrollHeight;
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('chat-message-input');
+        const text = input.value.trim();
+        if (text && currentChatUser) {
+            const newMessage = {
+                sender: loggedInUser.username,
+                receiver: currentChatUser,
+                text: text,
+                timestamp: new Date().toISOString()
+            };
+            messages.push(newMessage);
+            localStorage.setItem('messages', JSON.stringify(messages));
+            renderMessages();
+            input.value = '';
+        }
+    }
+
+    document.getElementById('send-message-btn').addEventListener('click', sendMessage);
+    document.getElementById('chat-message-input').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    const chatHeaderMain = document.querySelector('.chat-header-main');
+    if (chatHeaderMain) {
+        chatHeaderMain.addEventListener('click', () => {
+            if (window.innerWidth <= 768) {
+                const chatMainContainer = document.getElementById('chat-main-container');
+                const chatContacts = document.querySelector('.chat-contacts');
+                chatMainContainer.style.display = 'none';
+                chatContacts.style.display = 'block';
+            }
+        });
+    }
+
+    // Floating chatbox logic
+    const chatBox = document.getElementById('chatBox');
+    const chatHeader = document.getElementById('chatHeader');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatInputArea = document.querySelector('.chat-box .chat-input');
+    const chatInput = document.getElementById('chatInput');
+    const chatSendBtn = document.getElementById('chatSendBtn');
+
+    chatHeader.addEventListener('click', () => {
+        const isExpanded = chatBox.style.height === '400px';
+        chatBox.style.height = isExpanded ? '50px' : '400px';
+        chatMessages.style.display = isExpanded ? 'none' : 'flex';
+        chatInputArea.style.display = isExpanded ? 'none' : 'flex';
+    });
+
+    chatSendBtn.addEventListener('click', sendAdminMessage);
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendAdminMessage();
+        }
+    });
+
+    function sendAdminMessage() {
+        const text = chatInput.value.trim();
+        if (text) {
+            const message = {
+                sender: 'user',
+                text: text,
+                timestamp: new Date().toISOString()
+            };
+            let chatHistory = JSON.parse(localStorage.getItem('adminChatHistory')) || [];
+            chatHistory.push(message);
+            localStorage.setItem('adminChatHistory', JSON.stringify(chatHistory));
+            renderAdminChatMessages();
+            chatInput.value = '';
+        }
+    }
+
+    function renderAdminChatMessages() {
+        let chatHistory = JSON.parse(localStorage.getItem('adminChatHistory')) || [];
+        chatMessages.innerHTML = '';
+        chatHistory.forEach(msg => {
+            const messageDiv = document.createElement('div');
+            messageDiv.classList.add(msg.sender === 'user' ? 'message-user' : 'message-admin');
+            const bubble = document.createElement('div');
+            bubble.classList.add('message-bubble');
+            bubble.textContent = msg.text;
+            messageDiv.appendChild(bubble);
+            chatMessages.appendChild(messageDiv);
+        });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    let isSidebarMinimized = false;
+    document.getElementById('sidebarToggle').addEventListener('click', function() {
+        const sidebar = document.getElementById('sidebar');
+        const pageWrapper = document.getElementById('page-wrapper');
+        sidebar.classList.toggle('show');
+        pageWrapper.classList.toggle('sidebar-minimized');
+        isSidebarMinimized = !isSidebarMinimized;
+    });
+
+    const body = document.body;
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    themeToggleBtn.addEventListener('click', () => {
+        body.classList.toggle('light-mode');
+        const isLightMode = body.classList.contains('light-mode');
+        themeToggleBtn.innerHTML = isLightMode ? '<i class="bi bi-moon"></i>' : '<i class="bi bi-sun"></i>';
+        localStorage.setItem('theme', isLightMode ? 'light' : 'dark');
+    });
+
+    if (localStorage.getItem('theme') === 'light') {
+        body.classList.add('light-mode');
+        themeToggleBtn.innerHTML = '<i class="bi bi-moon"></i>';
+    } else {
+        body.classList.remove('light-mode');
+        themeToggleBtn.innerHTML = '<i class="bi bi-sun"></i>';
+    }
+
+    const notifIcon = document.getElementById('notifIcon');
+    const notifDropdown = document.getElementById('notif-dropdown');
+    notifIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        notifDropdown.style.display = notifDropdown.style.display === 'block' ? 'none' : 'block';
+    });
+    document.addEventListener('click', () => {
+        notifDropdown.style.display = 'none';
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+        let lastPage = localStorage.getItem("lastPage") || 'dashboard';
+        const sidebarLinks = document.querySelectorAll(".sidebar a");
+        sidebarLinks.forEach(link => {
+            if (link.onclick && link.onclick.toString().includes(`loadPage('${lastPage}'`)) {
+                loadPage(lastPage, link);
+            }
+        });
+        updateTopbarUsername();
+    });
+
+    function updateTopbarUsername() {
+        const usernameDisplay = document.getElementById('usernameDisplay');
+        if(usernameDisplay) usernameDisplay.textContent = loggedInUser.fullname || loggedInUser.username || 'Admin';
+    }
+
+    function searchContent() {
+        const searchInput = document.getElementById('searchInput');
+        const searchTerm = searchInput.value.toLowerCase();
+        const mainContent = document.getElementById('mainContent');
+        const currentActivePage = document.querySelector('.page[style*="display: block"]');
+        
+        if (currentActivePage && (currentActivePage.id === 'widgets-page' || currentActivePage.id === 'users-page' || currentActivePage.id === 'profile-page')) {
+            clearHighlights();
+            if (searchTerm.length > 0) {
+                const textNodes = findTextNodes(currentActivePage);
+                textNodes.forEach(node => {
+                    const text = node.nodeValue;
+                    const newText = text.replace(new RegExp(`(${searchTerm})`, 'gi'), `<span class="highlight">$1</span>`);
+                    if (newText !== text) {
+                        const newSpan = document.createElement('span');
+                        newSpan.innerHTML = newText;
+                        node.parentNode.insertBefore(newSpan, node);
+                        node.parentNode.removeChild(node);
+                    }
+                });
+            }
+        } else {
+            console.log("Pencarian hanya tersedia di halaman 'widgets', 'users', dan 'profile'.");
+        }
+    }
+
+    function findTextNodes(element) {
+        let textNodes = [];
+        for (let i = 0; i < element.childNodes.length; i++) {
+            const child = element.childNodes[i];
+            if (child.nodeType === 3) {
+                textNodes.push(child);
+            } else if (child.nodeType === 1) {
+                textNodes = textNodes.concat(findTextNodes(child));
+            }
+        }
+        return textNodes;
+    }
+
+    function clearHighlights() {
+        const highlights = document.querySelectorAll('.highlight');
+        highlights.forEach(highlight => {
+            const parent = highlight.parentNode;
+            parent.replaceChild(document.createTextNode(highlight.textContent), highlight);
+        });
+    }
+
+    function logout() {
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('currentUser');
+        window.location.href = 'index.html';
+    }
+</script>
+
+</body>
+</html>
